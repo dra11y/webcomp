@@ -1,0 +1,7 @@
+/target
+/target-*
+/dist-mac
+/dummy
+
+.env
+.env.*
