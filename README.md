@@ -4,7 +4,7 @@
 Compress (LZW), Deflate, Gzip, and Zstandard. It generates pre-compressed files for hosting on web servers, reducing
 bandwidth usage and improving performance.
 
-[![GitHub Test](https://img.shields.io/github/actions/workflow/status/koma-private/webcomp/test.yml?branch=master)](https://img.shields.io/github/actions/workflow/status/koma-private/webcomp/test.yml?branch=master)
+[![GitHub Test](https://img.shields.io/github/actions/workflow/status/koma-private/webcomp/release.yml)](https://github.com/koma-private/webcomp)
 [![GitHub Tag](https://img.shields.io/github/v/tag/koma-private/webcomp)](https://github.com/koma-private/webcomp)
 [![Crates.io Version](https://img.shields.io/crates/v/webcomp)](https://crates.io/crates/webcomp)
 
