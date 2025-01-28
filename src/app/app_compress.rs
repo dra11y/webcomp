@@ -1,7 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
 
-use md5::Digest;
 
 use crate::app::file_process_error::FileProcessError;
 use crate::arg_utils::args::Args;
