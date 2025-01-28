@@ -15,6 +15,8 @@ pub struct Args {
     pub version: bool,              // Display version information.
     pub zstd: bool,                 // Enable Zstandard compression.
     pub zstd_level: u8,             // Compression level for Zstandard.
+    pub no_md5: bool, // Skip generating MD5 checksums and using them to skip unchanged files.
+    pub progress_bar: bool, // Show a progress bar.
 }
 
 impl TryFrom<RawArgs> for Args {
@@ -58,6 +60,8 @@ impl TryFrom<RawArgs> for Args {
             version: value.version > 0,
             zstd: value.zstd > 0,
             zstd_level: value.zstd_level,
+            no_md5: value.no_md5,
+            progress_bar: value.progress_bar,
         })
     }
 }

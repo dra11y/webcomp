@@ -1,7 +1,12 @@
-use std::io::Write;
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
+
+use crate::app::app_compress::add_extension;
 
 /// Supported compression types.
-#[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone)]
+#[derive(Ord, Debug, PartialOrd, Eq, PartialEq, Copy, Clone)]
 pub enum CompressType {
     Brotli,
     Deflate,
@@ -52,24 +57,18 @@ impl CompressType {
         }
     }
 
-    /// Generates a file name for the compressed output based on the compression type.
-    pub fn get_filename(&self, original: &str) -> String {
+    pub fn extension(&self) -> &str {
         match self {
-            CompressType::Brotli => {
-                format!("{}.br", original)
-            }
-            CompressType::Deflate => {
-                format!("{}.zz", original)
-            }
-            CompressType::Gzip => {
-                format!("{}.gz", original)
-            }
-            CompressType::Lzw(_) => {
-                format!("{}.Z", original)
-            }
-            CompressType::Zstd(_) => {
-                format!("{}.zst", original)
-            }
+            CompressType::Brotli => "br",
+            CompressType::Deflate => "zz",
+            CompressType::Gzip => "gz",
+            CompressType::Lzw(_) => "Z",
+            CompressType::Zstd(_) => "zst",
         }
+    }
+
+    /// Generates a file name for the compressed output based on the compression type.
+    pub fn get_filename(&self, original: &Path) -> PathBuf {
+        add_extension(original, self.extension())
     }
 }

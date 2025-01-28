@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::app::file_process_error::FileProcessError;
 use crate::arg_utils::args::Args;
 use crate::search_files::search_files;
@@ -13,7 +15,7 @@ pub fn app_clean(args: &Args) -> anyhow::Result<()> {
         lazy_regex::Regex::new(r#"(?i)\.(br|zz|gz|Z|zst)$"#)?,
     )?;
 
-    let mut removed_files: Vec<String> = Vec::new();
+    let mut removed_files: Vec<PathBuf> = Vec::new();
     let mut errored_files: Vec<FileProcessError> = Vec::new();
 
     for file in files {
@@ -43,7 +45,7 @@ pub fn app_clean(args: &Args) -> anyhow::Result<()> {
         }
         removed_files.sort();
         for removed_file in removed_files {
-            println!("{}", removed_file);
+            println!("{:?}", removed_file);
         }
     }
 
@@ -55,7 +57,7 @@ pub fn app_clean(args: &Args) -> anyhow::Result<()> {
 
         errored_files.sort_by(|a, b| a.path.cmp(&b.path));
         for errored_file in errored_files {
-            println!("{}\t{}", errored_file.path, errored_file.message);
+            println!("{:?}\t{}", errored_file.path, errored_file.message);
         }
     }
 

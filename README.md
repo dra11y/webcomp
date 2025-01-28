@@ -182,7 +182,6 @@ rustup target add x86_64-apple-darwin aarch64-apple-darwin
 - [indicatif](https://github.com/console-rs/indicatif): Progress indicators.
 - [lazy-regex](https://github.com/Canop/lazy-regex): Regex compilation.
 - [lzw](https://github.com/nwin/lzw): LZW compression.
-- [rust_search](https://github.com/ParthJadhav/rust_search): File searching.
 - [threadpool](https://github.com/rust-threadpool/rust-threadpool): Multi-threading.
 - [zstd](https://github.com/gyscos/zstd-rs): Zstandard compression.
 

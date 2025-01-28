@@ -35,7 +35,7 @@ pub struct RawArgs {
     pub deflate: u8,
 
     /// Perform a dry run without making changes (for compression or cleaning).
-    #[arg(short, long, action = clap::ArgAction::Count)]
+    #[arg(long, action = clap::ArgAction::Count)]
     pub dry_run: u8,
 
     /// Enable Gzip compression.
@@ -57,6 +57,14 @@ pub struct RawArgs {
     /// Compression level for Zstandard (range: 1-22).
     #[arg(long, default_value_t = 10)]
     pub zstd_level: u8,
+
+    /// Skip generating MD5 checksums and using them to skip unchanged files.
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    pub no_md5: bool,
+
+    /// Show a progress bar.
+    #[arg(long, default_value_t = false)]
+    pub progress_bar: bool,
 
     /// Display help information.
     #[arg(short, long, action = clap::ArgAction::Count)]
