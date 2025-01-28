@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-
 use crate::app::file_process_error::FileProcessError;
 use crate::arg_utils::args::Args;
 use crate::compressor::compress_type::CompressType;
@@ -91,27 +90,23 @@ pub fn app_compress(args: &Args) -> anyhow::Result<()> {
                 for compress_type in compress_types.clone() {
                     let comp_file = compress_type.get_filename(orig_file);
                     if !comp_file.exists() {
-                        println!("COMP FILE DOES NOT EXIST: {:?}", comp_file);
                         this_file_compress_types.push(compress_type);
                         break;
                     }
                     let comp_md5_file = add_extension(&comp_file, ".md5");
                     let Ok(old_comp_md5) = std::fs::read_to_string(&comp_md5_file) else {
-                        println!("old_comp_md5 FILE CAN'T BE READ: {:?}", comp_md5_file);
                         this_file_compress_types.push(compress_type);
                         break;
                     };
                     let comp_source = match std::fs::read(&comp_file) {
                         Ok(content) => content,
-                        Err(error) => {
-                            println!("COMP FILE CAN'T BE READ: {comp_file:?}: error: {error:?}",);
+                        Err(_error) => {
                             this_file_compress_types.push(compress_type);
                             break;
                         }
                     };
                     let comp_md5 = format!("{:x}", md5::compute(&comp_source));
                     if comp_md5 != old_comp_md5 {
-                        println!("comp_md5 DOES NOT MATCH: {comp_md5}, {old_comp_md5}",);
                         this_file_compress_types.push(compress_type);
                         break;
                     }
@@ -124,7 +119,6 @@ pub fn app_compress(args: &Args) -> anyhow::Result<()> {
                     continue;
                 }
             } else {
-                eprintln!("original MD5 file not found! {:?}", orig_md5_file);
                 this_file_compress_types.extend(compress_types.clone());
             }
         }
@@ -176,7 +170,6 @@ pub fn app_compress(args: &Args) -> anyhow::Result<()> {
                                 if md5 {
                                     let mut written = original_md5_written.lock().unwrap();
                                     if !*written {
-                                        eprintln!("WRITE ORIGINAL MD5 FILE: {md5_file_cloned:?}");
                                         std::fs::write(md5_file_cloned, md5_cloned).ok();
                                         *written = true;
                                     }
