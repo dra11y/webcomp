@@ -86,39 +86,42 @@ pub fn app_compress(args: &Args) -> anyhow::Result<()> {
         let mut this_file_compress_types = if md5 { vec![] } else { compress_types.clone() };
 
         if md5 {
-            if let Ok(old_md5) = std::fs::read_to_string(&orig_md5_file) {
-                for compress_type in compress_types.clone() {
-                    let comp_file = compress_type.get_filename(orig_file);
-                    if !comp_file.exists() {
-                        this_file_compress_types.push(compress_type);
-                        break;
-                    }
-                    let comp_md5_file = add_extension(&comp_file, ".md5");
-                    let Ok(old_comp_md5) = std::fs::read_to_string(&comp_md5_file) else {
-                        this_file_compress_types.push(compress_type);
-                        break;
-                    };
-                    let comp_source = match std::fs::read(&comp_file) {
-                        Ok(content) => content,
-                        Err(_error) => {
-                            this_file_compress_types.push(compress_type);
-                            break;
+            let needs_all_compression = match std::fs::read_to_string(&orig_md5_file) {
+                Ok(old_md5) if orig_md5 != old_md5 => true,
+                Ok(_) => {
+                    let mut needs_recompress = Vec::new();
+                    for compress_type in compress_types.clone() {
+                        let comp_file = compress_type.get_filename(orig_file);
+
+                        let should_compress = !comp_file.exists()
+                            || match std::fs::read_to_string(add_extension(&comp_file, ".md5")) {
+                                Ok(old_comp_md5) => match std::fs::read(&comp_file) {
+                                    Ok(comp_source) => {
+                                        format!("{:x}", md5::compute(&comp_source)) != old_comp_md5
+                                    }
+                                    Err(_) => true,
+                                },
+                                Err(_) => true,
+                            };
+
+                        if should_compress {
+                            needs_recompress.push(compress_type);
                         }
-                    };
-                    let comp_md5 = format!("{:x}", md5::compute(&comp_source));
-                    if comp_md5 != old_comp_md5 {
-                        this_file_compress_types.push(compress_type);
-                        break;
                     }
+
+                    if needs_recompress.is_empty() {
+                        skipped_files_cloned
+                            .write()
+                            .unwrap()
+                            .push(orig_file.clone());
+                    }
+                    this_file_compress_types.extend(needs_recompress);
+                    false
                 }
-                if orig_md5 == old_md5 && this_file_compress_types.is_empty() {
-                    skipped_files_cloned
-                        .write()
-                        .unwrap()
-                        .push(orig_file.clone());
-                    continue;
-                }
-            } else {
+                Err(_) => true,
+            };
+
+            if needs_all_compression {
                 this_file_compress_types.extend(compress_types.clone());
             }
         }
@@ -234,22 +237,30 @@ pub fn app_compress(args: &Args) -> anyhow::Result<()> {
         final_errored_files.sort_by(|a, b| a.path.cmp(&b.path));
 
         println!(
-            "Compressed files:{} Skipped files:{} Errored files:{} Elapsed time:{:.2?}\n",
-            final_compressed_files.len(),
-            final_skipped_files.len(),
-            final_errored_files.len(),
-            now.elapsed(),
+            "Compressed: {compressed}  Skipped: {skipped}  Errored: {errored}  Elapsed: {et:.2?}\n",
+            compressed = final_compressed_files.len(),
+            skipped = final_skipped_files.len(),
+            errored = final_errored_files.len(),
+            et = now.elapsed(),
         );
 
-        if !final_compressed_files.is_empty() {
-            if args.dry_run {
-                println!(
-                    "Files to be compressed (Dry run): {}",
-                    final_compressed_files.len()
-                );
-            } else {
-                println!("Compressed files: {}", final_compressed_files.len());
+        if !final_skipped_files.is_empty() {
+            println!("Skipped files: {}", final_skipped_files.len());
+            for skipped_file in final_skipped_files {
+                println!("{}", skipped_file.to_string_lossy());
             }
+        }
+
+        if !final_compressed_files.is_empty() {
+            println!(
+                "\n{message}: {count}",
+                message = if args.dry_run {
+                    "Files to be compressed (Dry run)"
+                } else {
+                    "Compressed files"
+                },
+                count = final_compressed_files.len()
+            );
 
             println!("Ratio\tFile Path",);
             for processed_file in final_compressed_files {
@@ -258,13 +269,6 @@ pub fn app_compress(args: &Args) -> anyhow::Result<()> {
                     processed_file.ratio,
                     processed_file.path.to_string_lossy()
                 );
-            }
-        }
-
-        if !final_skipped_files.is_empty() {
-            println!("\nSkipped files: {}", final_skipped_files.len());
-            for skipped_file in final_skipped_files {
-                println!("{}", skipped_file.to_string_lossy());
             }
         }
 
